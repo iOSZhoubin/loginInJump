@@ -1,0 +1,105 @@
+//
+//  VPNCheckoutTextField.m
+//  loginIn
+//
+//  Created by jumpapp1 on 16/3/8.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+//正则类
+
+#import "VPNCheckoutTextField.h"
+#import <CommonCrypto/CommonDigest.h>
+@implementation VPNCheckoutTextField
+
++(BOOL)checkTextFieldWithNumber:(NSString *)textField{
+    NSString *regular = @"^[0-9]{1,10}";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+    
+}
+
++(BOOL)checkmobileconfigField:(NSString *)mobileconfigField{
+    NSString *regular = @"^[\u4e00-\u9fa5_a-zA-Z0-9]{1,10}";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:mobileconfigField];
+    return isMatch;
+}
+
++(BOOL)checkTextFieldWithGrapheme:(NSString *)textField{
+    NSString *regular = @"^[A-Za-z]{1,10}";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+}
+
++(BOOL)checkTextFieldWithRealmName:(NSString *)textField{
+    NSString *regular = @"(^www.)+[a-zA-Z0-9.]+((.net.cn)|(.com)|(.cn))";
+    NSString *str = @"[^\\s]+\\.[^\\s]*$";//这个范围太广阔
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+}
+
++(BOOL)checkTextFieldWithNumberOrGrapheme:(NSString *)textField{
+    NSString *regular = @"[a-zA-Z0-9_]{1,10}";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+}
+
++(BOOL)checkUserNameWithRule:(NSString *)textField{
+    //NSString *regular = @"^(?![0-9]+$)(?![a-zA-Z]+$)[a-zA-Z0-9_]{1,10}";
+    NSString *regular = @"^(?![0-9]+$)[a-zA-Z0-9_]{1,10}";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+}
+
+
++(BOOL)checkServerWithRule:(NSString *)server{
+    NSString *regular = @"((?:(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d))";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:server];
+    return isMatch;
+}
++(BOOL)checkSpecial:(NSString *)textField{
+    NSString *regular = @"[^&]+";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+}
++(BOOL)checkNumber:(NSString *)textField{
+    NSString *regular = @"[^[0123456789]]+";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+}
++(BOOL)checkGrapheme:(NSString *)textField{
+    NSString *regular = @"[^[a-zA-Z]]+";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regular];
+    BOOL isMatch = [predicate evaluateWithObject:textField];
+    return isMatch;
+}
++(BOOL)checkSpecialAll:(NSString *)str{
+    NSRange urgentRange = [str rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"~!/@#$%^&*()-_=+\\|[{}];:\'\",<.>/?"]];
+    if (urgentRange.location == NSNotFound) {
+        return NO;
+    }
+    return YES;
+}
+
++ (NSString *) md5:(NSString *)str
+{
+    const char *cStr = [str UTF8String];
+    unsigned char result[16];
+    CC_MD5( cStr, strlen(cStr), result );
+    return [NSString stringWithFormat:@"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+            result[0], result[1], result[2], result[3],result[4],
+            result[5], result[6], result[7],result[8], result[9],
+            result[10], result[11],result[12], result[13],
+            result[14], result[15]];
+     }
+
+@end

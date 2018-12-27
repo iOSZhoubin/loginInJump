@@ -1,0 +1,590 @@
+//
+//  VPNChangeViewController.m
+//  loginIn
+//
+//  Created by 马朝阳 on 16/3/18.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import "VPNChangeViewController.h"
+#import "AFNetworking.h"
+#import "GDataXMLNode.h"
+#import "VPNPersonlViewController.h"
+#import "VPNMainMeViewController.h"
+#import "ViewController.h"
+#import "VPNCheckoutTextField.h"
+@interface VPNChangeViewController ()<UITextFieldDelegate,UITableViewDataSource,UITableViewDelegate>
+
+@property (nonatomic)UITableView *tableView;
+@property (nonatomic,copy)NSArray *titleArray;
+@property (nonatomic)UITextField *formerTextField;//旧密码的TextField
+@property (nonatomic)UITextField *nowTextField;//新密码的TextField
+@property (nonatomic)UITextField *againTextField;//再次确认的TextField
+@property (nonatomic)UIAlertView *alertView;
+//@property (nonatomic)JSONModelArray *modelArray;
+@property (nonatomic)NSString *serverStr;//服务器地址
+@property (nonatomic)NSString *userStr;//用户名
+@property (nonatomic)NSString *pwdStr;//密码
+@property (nonatomic)NSInteger nu0;//判断密码中是否含有特殊字符“&”
+@property (nonatomic)NSInteger nu;//判断密码中是否包含数字的返回值
+@property (nonatomic)NSInteger nu2;//判断密码中是否包含字母的返回值
+@property (nonatomic)NSInteger nu3;//判断密码中是否包含特殊字符的返回值
+@property (nonatomic)NSInteger nu4;//解析sameasname时policy_enable的值
+@property (nonatomic)NSInteger nu5;//解析sameasoldpwd时policy_enable的值
+@property (nonatomic)NSInteger nu6;//解析minlength时policy_enable的值
+@property (nonatomic)NSInteger nu8;//解析minlength时policy_value的值
+@property (nonatomic)NSInteger nu7;//解析complex时policy_enable的值
+@property (nonatomic)NSInteger nu9;//解析complex时policy_value的值
+
+@end
+
+@implementation VPNChangeViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = BACKGROUNDColor;
+    //获取沙盒中的服务器地址、用户名和密码
+    NSDictionary *dataDict = [[NSUserDefaults standardUserDefaults]objectForKey:USER_USERNAME_PASS_SERVER];
+    self.serverStr = [dataDict objectForKey:@"server"];
+    self.userStr = [dataDict objectForKey:@"userName"];
+    self.pwdStr = [dataDict objectForKey:@"passWord"];
+    NSLog(@"##########%@ %@ %@",_pwdStr,_serverStr,_userStr);
+    [self changePassword];
+    [self initDataSource];
+    [UIView setAnimationsEnabled:YES];
+    //    UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithTitle:@"返回" style:UIBarButtonItemStylePlain target:self action:@selector(leftItemClick:)];
+    //    self.navigationItem.leftBarButtonItem = leftItem;
+    [self createButton];
+    
+    _nu=_nu2=_nu3=_nu4=_nu5=_nu6=_nu7=0;
+    
+    [self checkTextFieldNumber];
+    [self checkTextFieldGrapheme];
+    [self checkTextFieldSpecil];
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(closeKeyboard)];
+}
+
+//修改密码调用的方法，向服务端post三个参数change_pass、oldpass、newpass，当修改成功时会弹出警告框，点击确认之后，调用alertView的代理方法跳转到个人设置页面
+- (void)createPwd{
+    [self checkTextFieldSpecil1];
+    if (_nu0==1) {
+        [self createAlertView:@"密码中不能包含非法字符\n/&()|;\\'`\"<>"];
+        _nu0=0;
+    }else{
+        NSDictionary *paramer = @{@"change_pass":@1,@"oldpass":self.formerTextField.text,@"newpass":self.nowTextField.text};
+        NSString *sUrl = [NSString stringWithFormat:@"https://%@/jumpvpn/user_setting.php",_serverStr];
+        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+        manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+        [manager POST:sUrl parameters:paramer success:^(AFHTTPRequestOperation *operation, id   responseObject) {
+            //NSLog(@"＃¥＃¥＃¥＃%@",responseObject);
+            self.alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码修改成功" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [_alertView show];
+            //[self performSelector:@selector(dismissAlertView:) withObject:_alertView afterDelay:0.5];
+            NSLog(@"修改密码成功");
+            NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:_nowTextField.text,@"passWord",_serverStr,@"server",_userStr,@"userName",nil];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:dict forKey:USER_USERNAME_PASS_SERVER];
+            [defaults synchronize];
+            //        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+            //        manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+            //        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+            //        NSString *logOutUrl = [NSString stringWithFormat:@"https://%@/jumpvpn/logoff.php",serverStr];
+            //        //向服务器端发送post请求，在注销登录成功后，跳转到登录页面
+            //        [manager POST:logOutUrl parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //            ViewController *view = [[ViewController alloc]init];
+            //            [self presentViewController:view animated:YES completion:nil];
+            //            [self createAlertView];
+            //        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            //            NSLog(@"注销登录失败");
+            //        }];
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"修改密码失败");
+        }];
+    }
+}
+- (void)initDataSource{
+    self.titleArray = @[@"旧 密 码:",@"新 密 码:",@"再次确认:"];
+}
+//判断密码中是否包含数字，若包含返回1
+- (NSInteger)checkTextFieldNumber{
+    _nu = 0;
+    if (![VPNCheckoutTextField checkNumber:_nowTextField.text]) {
+        _nu = 1;
+    }
+    return _nu;
+}
+//判断密码中是否包含字母，若包含返回1
+- (NSInteger)checkTextFieldGrapheme{
+    _nu2 = 0;
+    if (![VPNCheckoutTextField checkGrapheme:_nowTextField.text]) {
+        _nu2 = 1;
+    }
+    return _nu2;
+}
+//判断密码中是否包含特殊字符，若包含返回1
+- (NSInteger)checkTextFieldSpecil{
+    _nu3 = 0;
+    if ([VPNCheckoutTextField checkSpecialAll:_nowTextField.text]) {
+        _nu3 = 1;
+    }
+    return _nu3;
+}
+//判断密码中是否含有非法字符
+- (NSInteger)checkTextFieldSpecil1{
+    _nu0 = 0;
+    if ([VPNCheckoutTextField  checkSpecial:_nowTextField.text]) {
+        _nu0 = 1;
+    }
+    return _nu0;
+}
+- (void)changePassword{
+    self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    self.tableView.scrollEnabled = NO;
+    //self.tableView.separatorColor = BACKGROUNDColor;
+    self.tableView.backgroundColor = [UIColor clearColor];
+    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    [self.view addSubview:self.tableView];
+    [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.view).with.offset(10);
+        make.left.equalTo(self.view).with.offset(0);
+        make.right.equalTo(self.view).with.offset(0);
+        make.height.equalTo(@240);
+    }];
+}
+- (void)createButton{
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    button.backgroundColor = BlueColor;
+    button.layer.cornerRadius = 5;
+    [button setTitle:@"确   定" forState:UIControlStateNormal];
+    button.titleLabel.font = [UIFont systemFontOfSize:20];
+    [button addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+    //button.translatesAutoresizingMaskIntoConstraints = NO;
+    [button mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.view).with.offset(20);
+        make.right.equalTo(self.view).with.offset(-20);
+        make.top.equalTo(self.view).with.offset(135+74+15);
+        make.height.equalTo(@45);
+    }];
+}
+//- (void)leftItemClick:(UIBarButtonItem *)item{
+//    //PersonlViewController *personlViewController = [[PersonlViewController alloc] init];
+//    [self.navigationController popViewControllerAnimated:YES];
+//}
+- (void)todoSomething:(id)sender{
+    if ([_formerTextField.text isEqualToString:@""]) {//当旧密码输入为空时
+        [self createAlertView:@"旧密码不能为空"];
+    }else{
+        if ([_nowTextField.text isEqualToString:@""]) {//当新密码输入为空时
+            [self createAlertView:@"新密码不能为空"];
+        }else{
+            if ([_againTextField.text isEqualToString:@""]) {//当再次输入新密码为空时
+                [self createAlertView:@"再次输入不能为空"];
+            }else{
+                if (![_formerTextField.text isEqualToString:_pwdStr]) {//当输入的旧密码和沙盒中存的密码不一致时
+                    [self createAlertView:@"旧密码不正确"];
+                }else{
+                    if (![_againTextField.text isEqualToString:[NSString stringWithString:_nowTextField.text]]) {//当前后两次输入新密码不一致时
+                        [self createAlertView:@"前后两次输入的新密码不一致"];
+                    }else{//当输入的旧密码中沙盒中存的密码一致时，向服务端发送post请求解析xml文件
+                        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+                        manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+                        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+                        //manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/html"];
+                        NSString *strUrl = [NSString stringWithFormat:@"https://%@/service/?service=passwdPolicyConfig",_serverStr];
+                        [manager POST:strUrl parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                            // NSLog(@"%@",responseObject);
+                            NSData *date = responseObject;
+                            NSString *str = [[NSString alloc]initWithData:date encoding:NSUTF8StringEncoding];
+                            NSLog(@"%@",str);
+                            GDataXMLDocument *xmlDoc = [[GDataXMLDocument alloc] initWithXMLString:str options:0 error:nil];
+                            NSArray *nodesArr = [xmlDoc nodesForXPath:@"//@policy_enable" error:nil];
+                            _nu4 = [[nodesArr[0] stringValue] integerValue];
+                            NSLog(@"%ld",_nu4);
+                            _nu5 = [[nodesArr[1] stringValue] integerValue];
+                            NSLog(@"%ld",_nu5);
+                            _nu6 = [[nodesArr[2] stringValue] integerValue];
+                            NSLog(@"%ld",_nu6);
+                            _nu7 = [[nodesArr[4] stringValue] integerValue];
+                            NSLog(@"%ld",_nu7);
+                            NSArray *nodesArrValue = [xmlDoc nodesForXPath:@"//@policy_value" error:nil];
+                            _nu8 = [[nodesArrValue[2] stringValue] integerValue];
+                            NSLog(@"%ld",_nu8);
+                            _nu9 = [[nodesArrValue[4] stringValue] integerValue];
+                            NSLog(@"%ld",_nu9);
+
+//                            GDataXMLElement *xmlEle = [xmlDoc rootElement];
+//                            NSArray *array = [xmlEle children];
+//                            for (int i=1; i<[array count]-1; i++) {
+//                                GDataXMLElement *ele = [array objectAtIndex:i];
+//                                if ([[ele name] isEqualToString:@"sameasname"]) {
+//                                    NSString *policy_enable = [ele attributeStringValueByName:@"policy_enable"];
+//                                    _nu4 = [policy_enable integerValue];
+//                                }
+//                                if ([[ele name] isEqualToString:@"sameasoldpwd"]) {
+//                                    NSString *policy_enable = [ele attributeStringValueByName:@"policy_enable"];
+//                                    // NSLog(@"%@",policy_enable);
+//                                    _nu5 = [policy_enable integerValue];
+//                                }
+//                                if ([[ele name] isEqualToString:@"minlength"]) {
+//                                    NSString *policy_enable = [ele attributeStringValueByName:@"policy_enable"];
+//                                    // NSLog(@"%@",policy_enable);
+//                                    NSString *policy_value = [ele attributeStringValueByName:@"policy_value"];
+//                                    // NSLog(@"%@",policy_value);
+//                                    _nu8 = [policy_value integerValue];
+//                                    _nu6 = [policy_enable integerValue];
+//                                }
+//                                if ([[ele name] isEqualToString:@"complex"]) {
+//                                    NSString *policy_enable = [ele attributeStringValueByName:@"policy_enable"];
+//                                    _nu7 = [policy_enable integerValue];
+//                                    NSString *policy_value = [ele attributeStringValueByName:@"policy_value"];
+//                                    _nu9 = [policy_value integerValue];
+//                                }
+//                            }
+                            //密码策略为：密码不能包含用户名
+                            if (_nu4==1 && _nu5==0 && _nu6==0 && _nu7==0) {
+                                // NSLog(@"密码不能包含用户名");
+                                if ([_nowTextField.text rangeOfString:_userStr].location != NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    [self createPwd];
+                                }
+                            }
+                            //密码策略为：新旧密码不能相同
+                            else if (_nu5==1 && _nu4==0 && _nu6==0 && _nu7==0) {
+                                //NSLog(@"新密码不能与旧密码相同");
+                                if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                    [self createAlertView:@"新旧密码不能相同"];
+                                }else{
+                                    [self createPwd];
+                                }
+                            }
+                            //密码策略为：设置密码的最小长度
+                            else if (_nu6==1 && _nu4==0 && _nu5==0 && _nu7==0) {
+                                if (_nowTextField.text.length < _nu8) {
+                                    [self createAlertView:@"小于密码的最小长度"];
+                                }else{
+                                    [self createPwd];
+                                }
+                            }
+                            //用户的密码策略设置为“密码必须包含：数字、字母、特殊字符中的一种或多种”，policy_enable为1时，policy_value有七种情况：密码必须包含数字时为1，必须包含字母时为2，必须包含特殊字符时为4，必须包含数字和字母时为3，必须包含数字和特殊字符时为5，必须包含字母和特殊字符时为6，必须包含数字、字母和特殊字符时为7
+                            else if (_nu7==1 && _nu4==0 && _nu5==0 && _nu6==0) {
+                                [self checkNumberOrGrameSpecialAlerView];
+                            }
+                            //密码策略为：密码不能包含用户名、新旧密码不能相同
+                            else if (_nu4==1 && _nu5==1 && _nu6==0 && _nu7==0) {
+                                if ([_nowTextField.text rangeOfString:_userStr].location != NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                        [self createAlertView:@"新旧密码不能相同"];
+                                    }else{
+                                        [self createPwd];
+                                    }
+                                }
+                            }
+                            //密码策略为：密码不能包含用户名、设置密码的最小长度
+                            else if (_nu4==1 && _nu6==1 && _nu5==0 && _nu7==0) {
+                                if ([_nowTextField.text rangeOfString:_userStr].location != NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    if (_nowTextField.text.length < _nu8) {
+                                        [self createAlertView:@"小于密码的最小长度"];
+                                    }else{
+                                        [self createPwd];
+                                    }
+                                }
+                            }
+                            //密码策略：密码不能包含用户名，密码必须包含：数字、字母、特殊字符中的一种或多种
+                            else if (_nu4==1 && _nu7==1 && _nu5==0 && _nu6==0) {
+                                if ([_nowTextField.text rangeOfString:_userStr].location !=NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    [self checkNumberOrGrameSpecialAlerView];
+                                }
+                            }
+                            //密码策略为：新旧密码不能相同、设置密码的最小长度
+                            else if (_nu5==1 && _nu6==1 && _nu4==0 && _nu7==0) {
+                                if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                    [self createAlertView:@"新旧密码不能相同"];
+                                }else{
+                                    if (_nowTextField.text.length < _nu8) {
+                                        [self createAlertView:@"小于密码的最小长度"];
+                                    }else{
+                                        [self createPwd];
+                                    }
+                                }
+                            }
+                            //密码策略为：新旧密码不能相同，密码必须包含数字、字母、特殊字符中的一种或多种
+                            else if (_nu5==1 && _nu7==1 && _nu4==0 && _nu6==0 ) {
+                                if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                    [self createAlertView:@"新旧密码不能相同"];
+                                }else{
+                                    [self checkNumberOrGrameSpecialAlerView];
+                                }
+                            }
+                            //密码策略为：设置密码的最小长度，密码必须包含数字、字母、特殊字符中的一种或多种
+                            else if (_nu6==1 && _nu7==1 && _nu4==0 && _nu5==0) {
+                                if (_nowTextField.text.length < _nu8) {
+                                    [self createAlertView:@"小于密码的最小长度"];
+                                }else{
+                                    [self checkNumberOrGrameSpecialAlerView];
+                                }
+                            }
+                            //密码策略为：不能包含用户名，新旧密码不能相同，设置密码的最小长度
+                            else if (_nu4==1&&_nu5==1&&_nu6==1&&_nu7==0){
+                                if ([_nowTextField.text rangeOfString:_userStr].location != NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                        [self createAlertView:@"新旧密码不能相同"];
+                                    }else{
+                                        if (_nowTextField.text.length < _nu8) {
+                                            [self createAlertView:@"小于密码的最小长度"];
+                                        }else{
+                                            [self createPwd];
+                                        }
+                                    }
+                                }
+                            }
+                            //密码策略为：不能包含用户名，新旧密码不能相同，密码必须包含数字、字母、特殊字符中的一种或多种
+                            else if (_nu4==1&&_nu5==1&&_nu7==1&&_nu6==0) {
+                                if ([_nowTextField.text rangeOfString:_userStr].location != NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                        [self createAlertView:@"新旧密码不能相同"];
+                                    }else{
+                                        [self checkNumberOrGrameSpecialAlerView];                                            }
+                                }
+                            }
+                            //密码策略为：不能包含用户名，设置密码的最小长度，密码中必选包含数字、字母、特殊字符中的一种或多种
+                            else if (_nu4==1&&_nu6==1&&_nu7==1&&_nu5==0) {
+                                if ([_nowTextField.text rangeOfString:_userStr].location != NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    if (_nowTextField.text.length < _nu8) {
+                                        [self createAlertView:@"小于密码的最小长度"];
+                                    }else{
+                                        [self checkNumberOrGrameSpecialAlerView];
+                                    }
+                                }
+                            }
+                            //密码策略为：新旧密码不能相同，设置密码的最小长度，密码中必须包含数字、字母、特殊字符中的一种或多种
+                            else if (_nu5==1&&_nu6==1&&_nu7==1&&_nu4==0) {
+                                if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                    [self createAlertView:@"新旧密码不能相同"];
+                                }else{
+                                    if (_nowTextField.text.length < _nu8) {
+                                        [self createAlertView:@"小于密码的最小长度"];
+                                    }else{
+                                        [self checkNumberOrGrameSpecialAlerView];
+                                    }
+                                }
+                            }
+                            //密码策略为：不能包含用户名，新旧密码不能相同，设置密码的最小长度，密码必须包含数字、字母、特殊字符中的一种或多种
+                            else if (_nu4==1&&_nu5==1&&_nu6==1&&_nu7==1) {
+                                if ([_nowTextField.text rangeOfString:_userStr].location != NSNotFound) {
+                                    [self createAlertView:@"密码不能包含用户名"];
+                                }else{
+                                    if ([_nowTextField.text isEqualToString:_pwdStr]) {
+                                        [self createAlertView:@"新旧密码不能相同"];
+                                    }else{
+                                        if (_nowTextField.text.length < _nu8) {
+                                            [self createAlertView:@"小于密码的最小长度"];
+                                        }else{
+                                            [self checkNumberOrGrameSpecialAlerView];
+                                        }
+                                    }
+                                }
+                            }
+                            //当解析各个元素中的policy_enable都为0时，即判断用户没有设置密码策略，调用createPwd方法，实现修改密码功能
+                            else if (_nu4==0&&_nu5==0&&_nu6==0&&_nu7==0) {
+                                [self createPwd];
+                            }
+                        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                            NSLog(@"解析失败");
+                        }];
+                    }
+                    
+                }
+            }
+        }
+    }
+}
+//点击确定按钮后触发的事件
+- (void)buttonPressed:(id)sender{
+    [[self class] cancelPreviousPerformRequestsWithTarget:self selector:@selector(todoSomething:) object:sender];
+    [self performSelector:@selector(todoSomething:) withObject:sender afterDelay:0.3f];
+}
+- (void)dismissAlertView:(UIAlertView *)alertView{
+    [_alertView dismissWithClickedButtonIndex:0 animated:YES];
+}
+#pragma mark -<UITableViewDataSource,UITableViewDelegate>
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 1;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return 3;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    static NSString *cellID = @"cellID";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID];
+    if (cell==nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
+    }
+    cell.textLabel.text = [self.titleArray objectAtIndex:indexPath.row];
+    cell.textLabel.textAlignment = NSTextAlignmentLeft;
+    cell.textLabel.font = [UIFont systemFontOfSize:15];
+    cell.textLabel.textColor = TITLEColor;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        cell.textLabel.frame = CGRectMake(20, 0, 75, cell.frame.size.height);
+    }else{
+        cell.textLabel.frame = CGRectMake(20, 0, 50, cell.frame.size.height);
+    }
+    cell.accessoryType = UITableViewCellStyleDefault;
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    UIView *whiteView1 = [[UIView alloc] initWithFrame:CGRectMake(cell.textLabel.frame.origin.x+cell.textLabel.frame.size.width+20, 0, ScreenWidth-(cell.textLabel.frame.origin.x*5.6)-cell.textLabel.frame.size.width, cell.frame.size.height)];
+    [cell addSubview:whiteView1];
+    if (indexPath.section==0 && indexPath.row==0) {
+        self.formerTextField = [[UITextField alloc] initWithFrame:whiteView1.bounds];
+        _formerTextField.placeholder = @"请输入旧密码";
+        _formerTextField.font = [UIFont systemFontOfSize:15];
+        _formerTextField.secureTextEntry = YES;
+        [_formerTextField addTarget:self action:@selector(changeNum:) forControlEvents:UIControlEventEditingChanged];
+        [whiteView1 addSubview:_formerTextField];
+    }
+    if (indexPath.section==0 && indexPath.row==1){
+        self.nowTextField = [[UITextField alloc] initWithFrame:whiteView1.bounds];
+        _nowTextField.placeholder = @"请输入新密码";
+        _nowTextField.font = [UIFont systemFontOfSize:15];
+        _nowTextField.secureTextEntry = YES;
+        [_nowTextField addTarget:self action:@selector(changeNum:) forControlEvents:UIControlEventEditingChanged];
+        [whiteView1 addSubview:_nowTextField];
+    }
+    if (indexPath.section==0 && indexPath.row==2) {
+        self.againTextField = [[UITextField alloc] initWithFrame:whiteView1.bounds];
+        _againTextField.placeholder = @"再次确认";
+        _againTextField.font = [UIFont systemFontOfSize:15];
+        _againTextField.secureTextEntry = YES;
+        [_againTextField addTarget:self action:@selector(changeNum:) forControlEvents:UIControlEventEditingChanged];
+        [whiteView1 addSubview:_againTextField];
+    }
+    return cell;
+}
+- (void)closeKeyboard{
+    [self.view endEditing:YES];
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 45;
+}
+- (void)checkNumberOrGrameSpecialAlerView{
+    if (_nu9==1) {
+        [self checkTextFieldNumber];
+        if (_nu==1) {
+            [self createPwd];
+        }else{
+            [self createAlertView:@"密码必须包含数字"];
+        }
+        _nu=0;
+    }
+    //用户的密码策略为“密码必须包含字母”时，调用checkTextFieldGrapheme方法，判断在输入的新密码中是否包含字母，若不包含，弹出警告框，包含则执行createPwd方法，实现修改密码的功能
+    else if (_nu9==2) {
+        //NSLog(@"密码必须包含字母");
+        [self checkTextFieldGrapheme];
+        if (_nu2==1) {
+            //NSLog(@"nu:%ld",_nu2);
+            [self createPwd];
+        }else{
+            [self createAlertView:@"密码必须包含字母"];
+        }
+        _nu2=0;
+    }
+    //用户的密码策略为“密码必须包含特殊字符”时，调用checkTextFieldspecil方法，判断在输入的新密码中是否包含特殊字符，若不包含，弹出警告框，包含则执行createPwd方法，实现修改密码的功能
+    else if (_nu9==4) {
+        //NSLog(@"密码必须包含特殊字符");
+        [self checkTextFieldSpecil];
+        if (_nu3==1) {
+            [self createPwd];
+        }else{
+            [self createAlertView:@"密码必须包含特殊字符"];
+        }
+        _nu3=0;
+    }
+    //用户的密码策略为“密码必须包含数字和字母”时，调用checkTextFieldNumber、checkTextFieldGrapheme方法，判断在输入的新密码中是否包含数字和字母，若不包含，弹出警告框，包含则执行createPwd方法，实现修改密码的功能
+    else if (_nu9==3) {
+        //NSLog(@"密码必须包含数字和字母");
+        [self checkTextFieldNumber];
+        [self checkTextFieldGrapheme];
+        if (_nu==1 && _nu2==1) {
+            [self createPwd];
+        }else{
+            [self createAlertView:@"密码必须包含数字和字母"];
+        }
+        _nu=_nu2=0;
+    }
+    //用户的密码策略为“密码必须包含数字和特殊字符”时，调用checkTextFieldNumber、checkTextFieldSpecil方法，判断在输入的新密码中是否包含数字和特殊字符，若不包含，弹出警告框，包含则执行createPwd方法，实现修改密码的功能
+    else if (_nu9==5) {
+        [self checkTextFieldNumber];
+        [self checkTextFieldSpecil];
+        if (_nu==1 && _nu3==1) {
+            [self createPwd];
+        }else{
+            [self createAlertView:@"密码必须包含数字和特殊字符"];
+        }
+        _nu=_nu3=0;
+    }
+    //用户的密码策略为“密码必须包含字母和特殊字符”时，调用checkTextFieldSpecil、checkTextFieldGrapheme方法，判断在输入的新密码中是否包含字母和特殊字符，若不包含，弹出警告框，包含则执行createPwd方法，实现修改密码的功能
+    else if (_nu9==6) {
+        [self checkTextFieldGrapheme];
+        [self checkTextFieldSpecil];
+        if (_nu2==1 && _nu3==1) {
+            [self createPwd];
+        }else{
+            [self createAlertView:@"密码必须包含字母和特殊字符"];
+        }
+        _nu2=_nu3=0;
+    }
+    //用户的密码策略为“密码必须包含数字、字母和特殊字符”时，调用checkTextFieldNumber、checkTextFieldGrapheme、checkTextFieldSpecil方法，判断在输入的新密码中是否包含数字、字母和特殊字符，若不包含，弹出警告框，包含则执行createPwd方法，实现修改密码的功能
+    else {
+        //NSLog(@"密码必须包含数字、字符和特殊字符");
+        [self checkTextFieldNumber];
+        [self checkTextFieldGrapheme];
+        [self checkTextFieldSpecil];
+        if (_nu==1 && _nu2==1 && _nu3==1) {
+            [self createPwd];
+        }else{
+            [self createAlertView:@"密码必须包含数字、字符和特殊字符"];
+        }
+        _nu=_nu2=_nu3=0;
+    }
+}
+//限制密码的长度不能超过32位
+- (void)changeNum:(UITextField *)textField{
+    int MaxLen = 32;
+    NSString *str = [textField text];
+    if ([textField.text length]>MaxLen) {
+        textField.text = [str substringToIndex:MaxLen];
+    }
+}
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    [_alertView dismissWithClickedButtonIndex:0 animated:YES];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    });
+    
+    //    RootTabBarController *tabBarController = [[RootTabBarController alloc] init];
+    //    [self presentViewController:tabBarController animated:YES completion:nil];
+}
+- (void)createAlertView:(NSString *)str{
+    self.alertView = [[UIAlertView alloc] initWithTitle:nil message:str delegate:self cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    [_alertView show];
+    [self performSelector:@selector(dismissAlertView:) withObject:_alertView afterDelay:1.0f];
+}
+@end

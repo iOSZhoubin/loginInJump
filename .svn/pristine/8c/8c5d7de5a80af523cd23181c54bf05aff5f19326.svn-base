@@ -1,0 +1,68 @@
+//
+//  MessageCell.m
+//  loginIn
+//
+//  Created by 马朝阳 on 16/4/18.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import "MessageCell.h"
+#import "Masonry.h"
+@interface MessageCell ()
+
+@property (nonatomic) UIImageView *iconImageView;
+@property (nonatomic) UILabel *msgLabel;
+@property (nonatomic) UILabel *timeLabel;
+@property (nonatomic) UITextView *msgText;
+@property (nonatomic) UITextView *timeText;
+
+@end
+
+@implementation MessageCell
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    if (self == [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self setUp];
+    }
+    return self;
+}
+//对cell进行布局，确定icon、time和msg的位置
+- (void)setUp{
+    CGFloat padding = 2.0;
+    CGRect frame = CGRectMake(0, 0, [[UIScreen mainScreen] applicationFrame].size.width, kCellHeight);
+    self.iconImageView = [[UIImageView alloc] initWithFrame:CGRectMake(4*padding, 4*padding, frame.size.height-8*padding, frame.size.height-8*padding)];
+    //_iconImageView.backgroundColor = [UIColor grayColor];
+    [self.contentView addSubview:_iconImageView];
+    
+    CGFloat labelWidth = frame.size.width - _iconImageView.frame.size.width - 2*padding;
+    CGFloat labelHeight = (frame.size.height - padding)/3.0;
+    self.timeLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(_iconImageView.frame)+4*padding, padding, labelWidth, labelHeight*1)];
+    //_timeLabel.backgroundColor = [UIColor greenColor];
+    _timeLabel.font = [UIFont systemFontOfSize:10.0];
+    _timeLabel.numberOfLines = 0;
+    [self.contentView addSubview:_timeLabel];
+    
+    frame = CGRectMake(CGRectGetMaxX(_iconImageView.frame)+4*padding, padding, labelWidth, labelHeight*2);
+    frame.origin.y = CGRectGetMaxY(_timeLabel.frame);
+    self.msgLabel = [[UILabel alloc] initWithFrame:frame];
+    _msgLabel.font = [UIFont systemFontOfSize:15.0];
+    //_msgLabel.backgroundColor = [UIColor redColor];
+    [self.contentView addSubview:_msgLabel];
+}
+- (void)refreshWithModel:(MessageModel *)message{
+    self.iconImageView.image = message.icon;
+    self.msgLabel.text = message.msg;
+    self.timeLabel.text = message.time;
+    
+}
+
+- (void)awakeFromNib {
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

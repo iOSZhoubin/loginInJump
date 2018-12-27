@@ -1,0 +1,16 @@
+//
+//  VPNMessageViewController.m
+//  loginIn
+//
+//  Created by jumpapp1 on 16/3/4.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import "VPNMessageViewController.h"
+
+@implementation VPNMessageViewController
+- (void)viewDidLoad{
+    [super viewDidLoad];
+    self.view.backgroundColor = BACKGROUNDColor;
+}
+@end

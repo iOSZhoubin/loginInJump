@@ -1,0 +1,21 @@
+//
+//  VPNStatus.m
+//  loginIn
+//
+//  Created by jumpapp1 on 16/3/10.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import "VPNStatus.h"
+//单例传值
+@implementation VPNStatus
+@synthesize contextStr = _contextStr;
+
+static VPNStatus *_instance = nil;
++(VPNStatus *)shareInstance{
+    if (_instance == nil) {
+        _instance = [[super alloc]init];
+    }
+    return _instance;
+}
+@end

@@ -1,0 +1,38 @@
+//
+//  PrefixHeader.pch
+//  loginIn
+//
+//  Created by jumpapp1 on 16/2/29.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#define MAS_SHORTHAND
+#define MAS_SHORTHAND_GLOBALS
+#import "Masonry.h"
+#define RGB(r,g,b) RGBA(r,g,b,1)
+
+#define RGBA(r,g,b,a) [UIColor \
+colorWithRed:r/255.0    \
+green:g/255.0           \
+blue:b/255.0 alpha:a]
+
+#define ScreenHeight ([UIScreen mainScreen].bounds.size.height)
+#define ScreenWidth ([UIScreen mainScreen].bounds.size.width)
+#define TITLEColor [UIColor colorWithRed:52/255.0 green:63/255.0 blue:83/255.0 alpha:1]
+#define TEXTColor [UIColor colorWithRed:111/255.0 green:117/255.0 blue:131/255.0 alpha:1]
+#define PLACEHOLDERColor [UIColor colorWithRed:199/255.0 green:199/255.0 blue:199/255.0 alpha:1]
+#define FOREGROUNDColor [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:1]
+#define BACKGROUNDColor [UIColor colorWithRed:238/255.0 green:239/255.0 blue:243/255.0 alpha:1]
+#define BlueColor [UIColor colorWithRed:44/255.0 green:159/255.0 blue:252/255.0 alpha:1]
+#define LineColor [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1]
+#define SupportColor [UIColor colorWithRed:109/255.0 green:109/255.0 blue:109/255.0 alpha:1]
+
+#define USER_USERNAME_PASS_SERVER @"user_username_pass_server"
+
+#endif /* PrefixHeader_pch */

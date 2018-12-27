@@ -1,0 +1,190 @@
+//
+//  VPNMainMeViewController.m
+//  loginIn
+//
+//  Created by jumpapp1 on 16/3/4.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//  个人设置页面，包括：个人信息、功能介绍、意见反馈、关于我们、注销登录
+
+#import "VPNMainMeViewController.h"
+#import "ViewController.h"
+#import "VPNPersonlViewController.h"
+#import "VPNFeatureViewController.h"
+#import "VPNAbusViewController.h"
+#import "AFNetworking.h"
+#import <MessageUI/MessageUI.h>
+@interface VPNMainMeViewController ()<UITableViewDelegate,UITableViewDataSource,MFMailComposeViewControllerDelegate,UIAlertViewDelegate>
+
+@property (nonatomic,copy)NSArray *titleArray;
+@property (nonatomic,copy)NSArray *pictureArray;
+@property(nonatomic)UITableView *tableView;
+@property (nonatomic)UIAlertView *alertView;
+
+@end
+
+@implementation VPNMainMeViewController
+-(void)viewDidLoad{
+    [super viewDidLoad];
+    self.view.backgroundColor = BACKGROUNDColor;
+    [self initDataArray];
+    [self createSetting];
+    [self createButton];
+}
+- (void)initDataArray{
+    //self.titleArray = @[@"个人信息",@"功能介绍",@"意见反馈",@"关于我们",@"注销登录"];
+    //self.pictureArray = @[@"personl",@"system",@"feedback",@"abus",@"quit1"];
+    self.titleArray = @[@"个人信息",@"功能介绍",@"意见反馈",@"关于我们"];
+    self.pictureArray = @[@"personl1",@"system1",@"feedback1",@"abus1"];
+}
+- (void)createSetting{
+    UIImageView *imageView = [[UIImageView alloc] init];
+    //imageView.contentMode = UIViewContentModeScaleAspectFit;
+    UIImage *image = [UIImage imageNamed:@"wd5(版权）logo_02-2@.png"];
+    //    CGFloat left = 0;
+    //    CGFloat right = 0;
+    //    CGFloat top = -80;
+    //    CGFloat bottom = -80;
+    //    UIEdgeInsets insets = UIEdgeInsetsMake(top, left, bottom, right);
+    //    image = [image resizableImageWithCapInsets:insets resizingMode:UIImageResizingModeStretch];
+    [imageView setImage:image];
+    [self.view addSubview:imageView];
+    [imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.view).with.offset(0);
+        make.right.equalTo(self.view).with.offset(0);
+        make.top.equalTo(self.view).with.offset(64);
+        make.height.equalTo(@170);
+    }];
+    
+    self.tableView = [[UITableView alloc] init];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    _tableView.scrollEnabled = NO;
+    _tableView.backgroundColor = [UIColor clearColor];
+    _tableView.separatorColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1];
+    _tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];//去掉多余分割线
+    [_tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cellID"];
+    [self.view addSubview:_tableView];
+    [_tableView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.view).with.offset(0);
+        make.right.equalTo(self.view).with.offset(0);
+        make.top.equalTo(imageView.mas_bottom).with.offset(0);
+        make.bottom.equalTo(self.view).with.offset(-44);
+    }];
+}
+
+#pragma mark - <UITableViewDelegate,UITableViewSource>
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 1;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.titleArray.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cellID" forIndexPath:indexPath];
+    cell.textLabel.text = [self.titleArray objectAtIndex:indexPath.row];
+    cell.imageView.image = [UIImage imageNamed:[self.pictureArray objectAtIndex:indexPath.row]];
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    if (indexPath.section==0 && indexPath.row==0) {//跳转到个人信息页面
+        VPNPersonlViewController *personViewController = [[VPNPersonlViewController alloc] init];
+        [self.navigationController pushViewController:personViewController animated:YES];
+    }
+    if (indexPath.section==0 && indexPath.row==1) {//跳转到功能介绍页面
+        VPNFeatureViewController *featureViewController = [[VPNFeatureViewController alloc] init];
+        [self.navigationController pushViewController:featureViewController animated:YES];
+    }
+    if (indexPath.section==0 && indexPath.row==2) {
+        //调用系统的邮件功能，手机要绑定，提前配置好
+        [self sendMailInApp];
+        //[self sendMailInApp1];
+    }
+    if (indexPath.section==0 && indexPath.row==3) {//跳转到关于我们页面
+        VPNAbusViewController *abusViewController = [[VPNAbusViewController alloc] init];
+        [self.navigationController pushViewController:abusViewController animated:YES];
+    }
+//    if (indexPath.section==0 && indexPath.row==4) {//注销登录
+//        self.alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:@"确定退出？" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"取消", nil];
+//        [self.alertView show];
+//    }
+}
+- (void)createButton{
+    UIButton *quitButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [quitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    quitButton.backgroundColor = [UIColor redColor];
+    quitButton.layer.masksToBounds = YES;
+    quitButton.layer.cornerRadius = 5;
+    [quitButton setTitle:@"注销登录" forState:UIControlStateNormal];
+    [quitButton setTitleColor:[UIColor colorWithRed:0.6f green:0.36f blue:0.01f alpha:1.0f] forState:UIControlStateSelected];
+    quitButton.titleLabel.font = [UIFont systemFontOfSize:20];
+    //changeButton.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+    //changeButton.frame = CGRectMake(0, view.frame.size.height-60, view.frame.size.width, 40);
+    [quitButton addTarget:self action:@selector(quitButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:quitButton];
+    [quitButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.view).with.offset(20);
+        make.right.equalTo(self.view).with.offset(-20);
+        make.top.equalTo(self.view).with.offset(150+170+25+64+50);
+        make.height.equalTo(@45);
+    }];
+
+}
+- (void)quitButton:(UIButton *)button{
+    self.alertView = [[UIAlertView alloc] initWithTitle:nil message:@"确定注销？" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"取消", nil];
+    [self.alertView show];
+}
+//当点击警告框中的确定按钮，调用alertView的代理方法
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    if (buttonIndex==0) {
+        NSDictionary *dataDict = [[NSUserDefaults standardUserDefaults]objectForKey:USER_USERNAME_PASS_SERVER];
+        NSString *serverStr = [dataDict objectForKey:@"server"];
+        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+        manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+        NSString *logOutUrl = [NSString stringWithFormat:@"https://%@/jumpvpn/logoff.php",serverStr];
+        //向服务器端发送post请求，在注销登录成功后，跳转到登录页面
+        [manager POST:logOutUrl parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"注销登录成功");
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"loginOut" object:nil];
+            ViewController *view = [[ViewController alloc]init];
+            [self presentViewController:view animated:YES completion:nil];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"注销登录失败");
+        }];
+    }
+    [self.alertView dismissWithClickedButtonIndex:0 animated:YES];
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 50;
+}
+//-(void)loginOut:(id)sender{
+//    ViewController *view = [[ViewController alloc]init];
+//    [self presentViewController:view animated:YES completion:nil];
+//
+//}
+//会导致程序暂时退出
+- (void)sendMailInApp{
+    NSURL *url = [NSURL URLWithString:@"mailto:support@jump.net.cn"];
+    if ([[UIApplication sharedApplication] canOpenURL:url]) {
+        [[UIApplication sharedApplication] openURL:url];
+    }else{
+        NSLog(@"不能发送邮件");
+    }
+}
+//iOS系统会替我们提供一个mail的UI，无法进行定制
+- (void)sendMailInApp1{
+    if ([MFMailComposeViewController canSendMail]) {
+        MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
+        [controller setToRecipients:@[@"support@jump.net.cn"]];//发送给谁
+        [controller setSubject:@"标题"];//设置标题
+        [controller setMessageBody:@"内容内容" isHTML:YES];//设置内容
+        controller.mailComposeDelegate = self;
+        [self presentViewController:controller animated:YES completion:nil];
+    }else{
+        NSLog(@"不能发送邮件");
+    }
+}
+
+@end

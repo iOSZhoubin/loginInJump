@@ -1,0 +1,167 @@
+//
+//  VPNIpSourceViewController.m
+//  loginIn
+//
+//  Created by jumpapp1 on 16/3/10.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import "VPNIpSourceViewController.h"
+#import "AFNetworking.h"
+
+@implementation VPNIpSourceViewController
+
+-(void)viewDidLoad{
+    [super viewDidLoad];
+        self.navigationController.navigationBar.translucent = NO;
+    self.title =@"IP资源";
+    self.view.backgroundColor = BACKGROUNDColor;
+    _dataDict = [[NSUserDefaults standardUserDefaults] objectForKey:USER_USERNAME_PASS_SERVER];
+    [self getIPSourceData];
+    
+}
+
+//获取IPSuorces
+-(void)getIPSourceData{
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+    [manager POST:[NSString stringWithFormat:@"https://%@/service/?service=loadIpSource",_dataDict[@"server"]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSData *data = responseObject;
+        NSMutableArray *array = [NSMutableArray array];
+        array = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+        NSLog(@"%@",array);
+        NSSet *set = [NSSet setWithArray:array];
+        _ipSourceDataArray = [set allObjects];
+        [self analyzingIPsourceDataArray];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"222");
+        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"温馨提示" message:@"IP资源获取失败" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
+    }];
+    
+}
+
+//序列化IPSources
+-(void)analyzingIPsourceDataArray{
+//    NSLog(@"#####%@",_ipSourceDataArray);
+    NSMutableArray *group = [_ipSourceDataArray valueForKeyPath:@"@distinctUnionOfObjects.resource_group"];
+//    NSLog(@"%@",group);
+    NSMutableDictionary * mudict = [NSMutableDictionary  dictionary];
+    for (int i = 0 ; i<group.count; i++) {
+        NSMutableArray * array = [NSMutableArray array];
+        for (int j=0 ; j<_ipSourceDataArray.count; j++) {
+            if ([group[i] isEqualToString:_ipSourceDataArray[j][@"resource_group"]]) {
+                [array addObject:_ipSourceDataArray[j]];
+            }
+                [mudict addEntriesFromDictionary:@{group[i]:array}];
+        }
+    }
+//    NSLog(@"%@",mudict);
+    _sourceDict = [NSMutableDictionary dictionary];
+    _sourceDict = mudict ;
+            [self createTableView];
+}
+
+
+-(void)createTableView{
+    _tableView = [[UITableView alloc]initWithFrame:[[UIScreen mainScreen] bounds] style:UITableViewStyleGrouped];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    [self.view addSubview:_tableView];
+}
+
+
+#define mark UITableViewDataSource
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return _sourceDict.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+//        NSLog(@"###%li",[[_sourceDict allValues][section] count]);
+//    NSLog(@"%li",section);
+//    for ( int i = 0 ; i < _sourceDict.allKeys.count; i ++) {
+//        if (section == i) {
+//            return [_sourceDict[_sourceDict.allKeys[i]] count];
+//        }
+//    }
+//    return 1;
+    
+//    NSLog(@"$$$$%li",section);
+    
+    return [[_sourceDict allValues][section] count];
+
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return 30;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section{
+    return 1;
+}
+
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
+//    for (int i = 0 ; i < _sourceDict.allKeys.count ; i++) {
+//        if (section == i) {
+//            return  _sourceDict.allKeys[i];
+//            
+//        }
+//    }
+//    return @"";
+//    NSLog(@"%@",[_sourceDict allKeys]);
+//    NSLog(@"%li",section);
+    return [NSString stringWithFormat:@"%@",[_sourceDict allKeys][section]];
+    
+    
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    static NSString *identifier = @"cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier];
+    }
+    cell.imageView.image = [UIImage imageNamed:@"sblb"];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//    for (int i = 0 ; i < _sourceDict.allKeys.count; i++) {
+//        if (indexPath.section == i) {
+//            for (int j = 0 ; j < [_sourceDict[_sourceDict.allKeys[i]] count];j++ ) {
+//                if (indexPath.row == j) {
+//                    cell.textLabel.text = _sourceDict[_sourceDict.allKeys[i]][j][@"resource_name"];
+//                    cell.textLabel.textColor = TEXTColor;
+//                    cell.textLabel.font = [UIFont systemFontOfSize:15];
+//                    cell.detailTextLabel.textColor = TEXTColor;
+//                    cell.detailTextLabel.font = [UIFont systemFontOfSize:12];
+//                    cell.detailTextLabel.text = [NSString stringWithFormat:@"访问地址:%@ 端口:%@",_sourceDict[_sourceDict.allKeys[i]][j][@"ip_mask"],_sourceDict[_sourceDict.allKeys[i]][j][@"ip_port"]];
+//                }
+//            }
+//        }
+//    }
+    if ([_sourceDict[_sourceDict.allKeys[indexPath.section]][indexPath.row][@"resource_sub_type"] isEqualToString:@"http"] ||[_sourceDict[_sourceDict.allKeys[indexPath.section]][indexPath.row][@"resource_sub_type"] isEqualToString:@"https"]) {
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    }
+    cell.textLabel.text = [_sourceDict allValues][indexPath.section][indexPath.row][@"resource_name"];
+    cell.textLabel.textColor = TEXTColor;
+    cell.textLabel.font = [UIFont systemFontOfSize:15];
+    cell.detailTextLabel.textColor = TEXTColor;
+    cell.detailTextLabel.font = [UIFont systemFontOfSize:12];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"访问地址:%@ 端口:%@",[_sourceDict allValues][indexPath.section][indexPath.row][@"ip_mask"],[_sourceDict allValues][indexPath.section][indexPath.row][@"ip_port"]];
+    return cell;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+//    NSLog(@"%@",_sourceDict[_sourceDict.allKeys[indexPath.section]][indexPath.row]);
+    if ([_sourceDict[_sourceDict.allKeys[indexPath.section]][indexPath.row][@"resource_sub_type"] isEqualToString:@"http"] ||[_sourceDict[_sourceDict.allKeys[indexPath.section]][indexPath.row][@"resource_sub_type"] isEqualToString:@"https"]) {
+//        NSLog(@"URl跳转啊");
+        //http://www.jump.net.cn
+        NSString *url = [NSString stringWithFormat:@"%@://%@",_sourceDict[_sourceDict.allKeys[indexPath.section]][indexPath.row][@"resource_sub_type"],_sourceDict[_sourceDict.allKeys[indexPath.section]][indexPath.row][@"ip_mask"]];
+        [[UIApplication sharedApplication]openURL:[NSURL URLWithString:url]];
+
+    }else{
+        
+    }
+    
+}
+
+@end

@@ -1,0 +1,17 @@
+//
+//  MessageCell.h
+//  loginIn
+//
+//  Created by 马朝阳 on 16/4/18.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "MessageModel.h"
+#define kCellHeight 50
+
+@interface MessageCell : UITableViewCell
+
+- (void)refreshWithModel:(MessageModel *)message;
+
+@end

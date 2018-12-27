@@ -1,0 +1,372 @@
+//
+//  VPNConnectViewController.m
+//  loginIn
+//
+//  Created by jumpapp1 on 16/2/29.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import "VPNConnectViewController.h"
+#import "UIView+Category.h"
+#import <objc/message.h>
+#import "RootTabBarController.h"
+@interface VPNConnectViewController ()
+@property(nonatomic,strong)NSDictionary *mobileconfigFileDict;
+@end
+
+@implementation VPNConnectViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+//    self.navigationController.navigationBar.translucent = NO;
+    _dataDict = [[NSUserDefaults standardUserDefaults] objectForKey:USER_USERNAME_PASS_SERVER];
+    _mobileconfigFileDict = [[NSUserDefaults standardUserDefaults]objectForKey:USER_USERMOBILECONFIGFILE];
+    _subView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, ScreenWidth  , ScreenHeight)];
+    _subView.backgroundColor = [UIColor clearColor];
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(closeKeyboard)];
+    [_subView addGestureRecognizer:tap];
+//    [self.view addSubview:_subView];
+    _scrollerView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, ScreenWidth  , ScreenHeight)];
+    _scrollerView.delegate = self;
+    [_scrollerView addSubview:_subView];
+    [self.view addSubview:_scrollerView];
+    if (self.view.frame.size.width <= 375) {
+        _scrollerView.contentSize = CGSizeMake(0, ScreenHeight*1.1);
+    }
+    self.view.backgroundColor = BACKGROUNDColor;
+    [self setChooseView];
+    if (_segmentedControl.selectedSegmentIndex == 0) {
+        [self setCourse];
+    }
+    _scrollerView.scrollEnabled = NO;
+     
+}
+
+-(void)closeKeyboard{
+    [self.view endEditing:YES];
+    _scrollerView.contentOffset = CGPointMake(0, -64);
+}
+
+//帮助页面
+-(void)setChooseView{
+//    _segmentedControl = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"配置说明",@"生成描述文件",@"IPSec", nil]];
+    _segmentedControl = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"配置说明",@"生成描述文件", nil]];
+    _segmentedControl.frame = CGRectMake(_subView.frame.origin.x+30, 5, ScreenWidth-60, 30);
+    _segmentedControl.selectedSegmentIndex = 0;
+    _segmentedControl.backgroundColor = [UIColor whiteColor];
+    _segmentedControl.tintColor = BlueColor;
+    [_segmentedControl addTarget:self action:@selector(segementIndex:) forControlEvents:UIControlEventValueChanged];
+    [_subView addSubview:_segmentedControl];
+}
+
+-(void)setCourse{
+    [_mobTableVew removeFromSuperview];
+    [_getMobileconfigBtn removeFromSuperview];
+    [_ipsecConnectBtn removeFromSuperview];
+    [_mobTableVew removeFromSuperview];
+    _imageScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(30, _segmentedControl.frame.origin.y +_segmentedControl.frame.size.height + 8, _segmentedControl.frame.size.width, _subView.frame.size.height - _segmentedControl.frame.origin.y -_segmentedControl.frame.size.height - 128)];
+    [_imageScrollView setShowsVerticalScrollIndicator:NO];
+    _imageScrollView.contentSize = CGSizeMake(0, (7550*_segmentedControl.frame.size.width)/1242);
+    _imageViewCourse = [[UIImageView alloc]initWithFrame:CGRectMake(0,  0, _segmentedControl.frame.size.width, (7550*_segmentedControl.frame.size.width)/1242)];
+    _imageViewCourse.image = [UIImage imageNamed:@"helpImage"];
+    _imageViewCourse.backgroundColor = [UIColor lightGrayColor];
+    
+//    [_imageViewCourse setContentScaleFactor:[[UIScreen mainScreen] scale]];
+//    _imageViewCourse.contentMode = UIViewContentModeScaleAspectFit;
+//    _imageViewCourse.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+//    _imageViewCourse.clipsToBounds = YES;
+
+
+    [_subView addSubview:_imageViewCourse];
+    [_imageScrollView addSubview:_imageViewCourse];
+    [_subView addSubview:_imageScrollView];
+}
+
+#pragma mark UISegmentedcontorlDelegate
+-(void)segementIndex:(UISegmentedControl *)seg{
+    NSInteger index = seg.selectedSegmentIndex;
+    NSLog(@"%li",(long)index);
+    switch (index) {
+        case 0:{
+            NSLog(@"0");
+            [self setCourse];
+            _scrollerView.scrollEnabled = NO;
+        }
+            break;
+        case 1:{
+            NSLog(@"1");
+            [self setMobileConfig];
+            _scrollerView.scrollEnabled = YES;
+        }
+            break;
+//        case 2:{
+//            NSLog(@"2");
+//            [self setIPSecConnect];
+//        }
+//            break;
+            
+        default:
+            break;
+    }
+}
+
+-(void)setMobileConfig{
+    [_imageViewCourse removeFromSuperview];
+    [_mobTableVew removeFromSuperview];
+//    [_getMobileconfigBtn removeFromSuperview];
+    [_ipsecConnectBtn removeFromSuperview];
+    _mobTableVew = [[UITableView alloc]initWithFrame:CGRectMake(30, _segmentedControl.frame.origin.y +_segmentedControl.frame.size.height + 3, _segmentedControl.frame.size.width, self.view.frame.size.height- _segmentedControl.frame.origin.y - _segmentedControl.frame.size.height - 3) style:UITableViewStylePlain];
+    _mobTableVew.delegate = self;
+    _mobTableVew.dataSource = self;
+    _mobTableVew.scrollEnabled = NO;
+    _mobTableVew.tag = 0;
+    _mobTableVew.separatorColor = BACKGROUNDColor;
+    _mobTableVew.backgroundColor = [UIColor clearColor];
+    [_subView addSubview:_mobTableVew];
+    
+    _getMobileconfigBtn = [[UIButton alloc]init];
+    _getMobileconfigBtn.backgroundColor = BlueColor;
+    _getMobileconfigBtn.layer.cornerRadius = 5;
+    [_getMobileconfigBtn setTitle:@"生成配置文件" forState:UIControlStateNormal];
+    [_getMobileconfigBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_getMobileconfigBtn addTarget:self action:@selector(getMobileconfigFile:) forControlEvents:UIControlEventTouchUpInside];
+    [_subView addSubview:_getMobileconfigBtn];
+    _getMobileconfigBtn.translatesAutoresizingMaskIntoConstraints = NO;
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_getMobileconfigBtn attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:_subView attribute:NSLayoutAttributeLeft multiplier:1 constant:40]];
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_getMobileconfigBtn attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:_subView attribute:NSLayoutAttributeRight multiplier:1 constant:-40]];
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_getMobileconfigBtn attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:_subView attribute:NSLayoutAttributeTop multiplier:1 constant:350]];
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_getMobileconfigBtn attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:45]];
+}
+
+//点击事件
+-(void)getMobileconfigFile:(id)sender{
+    [self closeKeyboard];
+    if (mobileconfigField.text.length < 1 || serField.text.length < 1 || userField.text.length < 1 ||passField.text.length < 1) {
+        NSLog(@"11111");
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:nil message:@"内容不能为空" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+        });
+    }else{
+        NSLog(@"sendInfomationToServer");
+        [self saveUserMobileconfigFile];
+        NSString *string = [NSString stringWithFormat:@"https://%@/createXml.php?p1=%@&p2=%@&p3=%@&p4=%@",_dataDict[@"server"],userField.text,passField.text,serField.text,mobileconfigField.text];
+        NSString *infomation = [string stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        [[UIApplication sharedApplication]openURL:[NSURL URLWithString:infomation]];
+//        NSArray *array = @[mobileconfigField.text,serField.text,userField.text,passField.text];
+//        NSLog(@"*****%@",array);
+//        RootTabBarController *rootTabBarController = [[RootTabBarController alloc]init];
+
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"mobileconfigFileSave" object:nil userInfo:nil];
+    }
+}
+
+#pragma mark MobileconfigFire
+-(void)saveUserMobileconfigFile{
+    NSDictionary *dict = [[NSDictionary alloc]initWithObjectsAndKeys:mobileconfigField.text,@"mobileconfigFileName",serField.text,@"server",userField.text,@"user",passField.text,@"pass", nil];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:dict forKey:USER_USERMOBILECONFIGFILE];
+    [defaults synchronize];
+}
+
+
+
+#pragma mark UITableViewDataSource
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 2;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (tableView.tag == 0) {
+        if (section == 0 ) {
+            return 1;
+        }else{
+            return 4;
+        }
+    }else{
+        if (section == 0) {
+            return 1;
+        }else{
+            return 5;
+        }
+    }
+    
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return 20;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    static NSString *identifier = @"identifier";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    cell.textLabel.textAlignment = NSTextAlignmentLeft;
+    cell.textLabel.font = [UIFont systemFontOfSize:15];
+    cell.textLabel.textColor = TITLEColor;
+    cell.textLabel.frame = CGRectMake(20, 0, 50, cell.frame.size.height);
+    cell.accessoryType = UITableViewCellStyleDefault;
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    _cellView = [[UIView alloc]initWithFrame:CGRectMake(cell.textLabel.frame.origin.x + cell.textLabel.frame.size.width +20, 0, ScreenWidth - (cell.textLabel.frame.origin.x*5.6) - cell.textLabel.frame.size.width, cell.frame.size.height)];
+//    _cellView.backgroundColor = [UIColor redColor];
+    [cell addSubview:_cellView];
+    if (tableView.tag == 0) {
+        switch (indexPath.section) {
+            case 0:{
+                cell.textLabel.text = @"类型";
+                UILabel *protocolLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 100, 100)];
+                protocolLabel.textColor = TITLEColor;
+                protocolLabel.font = [UIFont systemFontOfSize:15];
+                protocolLabel.text = @"PPTP/L2TP";
+                cell.accessoryView = protocolLabel;
+                
+            }
+                break;
+            case 1:{
+                if (indexPath.row == 0) {
+                    cell.textLabel.text = @"描述";
+                    mobileconfigField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    mobileconfigField.placeholder = @"连接显示名称";
+                    mobileconfigField.font = [UIFont systemFontOfSize:15];
+                    mobileconfigField.text = _mobileconfigFileDict[@"mobileconfigFileName"];
+                    [_cellView addSubview:mobileconfigField];
+                }else if (indexPath.row == 1){
+                    cell.textLabel.text = @"服务器";
+                    serField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    serField.placeholder = @"服务器主机名或IP地址";
+                    serField.font = [UIFont systemFontOfSize:15];
+                    serField.text = _mobileconfigFileDict[@"server"];
+                    [_cellView addSubview:serField];
+                }else if (indexPath.row == 2){
+                    cell.textLabel.text = @"帐户";
+                    userField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    userField.placeholder = @"用于鉴定连接的帐户";
+                    userField.font = [UIFont systemFontOfSize:15];
+                    userField.text = _mobileconfigFileDict[@"user"];
+                    [_cellView addSubview:userField];
+                }else if (indexPath.row == 3){
+                    cell.textLabel.text = @"密码";
+                    passField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    passField.placeholder = @"用于鉴定连接的密码";
+                    passField.font = [UIFont systemFontOfSize:15];
+                    passField.text = _mobileconfigFileDict[@"pass"];
+                    [_cellView addSubview:passField];
+                }
+            }
+                break;
+            default:
+                break;
+        }
+
+    }else{
+        switch (indexPath.section) {
+            case 0:{
+                cell.textLabel.text = @"类型";
+                UILabel *protocolLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 100, 100)];
+                protocolLabel.textColor = TITLEColor;
+                protocolLabel.font = [UIFont systemFontOfSize:15];
+                protocolLabel.text = @"IPSec";
+                cell.accessoryView = protocolLabel;
+            }
+                break;
+            case 1:{
+                if (indexPath.row == 0) {
+                    cell.textLabel.text = @"描述";
+                    mobileconfigField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    mobileconfigField.placeholder = @"连接显示名称";
+                    mobileconfigField.font = [UIFont systemFontOfSize:15];
+                    [_cellView addSubview:mobileconfigField];
+                }else if (indexPath.row == 1){
+                    cell.textLabel.text = @"服务器";
+                    serField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    serField.placeholder = @"服务器主机名或IP地址";
+                    serField.font = [UIFont systemFontOfSize:15];
+                    [_cellView addSubview:serField];
+                }else if (indexPath.row == 2){
+                    cell.textLabel.text = @"帐户";
+                    userField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    userField.placeholder = @"用于鉴定连接的帐户";
+                    userField.font = [UIFont systemFontOfSize:15];
+                    [_cellView addSubview:userField];
+                }else if (indexPath.row == 3){
+                    cell.textLabel.text = @"密码";
+                    passField = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    passField.placeholder = @"用于鉴定连接的密码";
+                    passField.font = [UIFont systemFontOfSize:15];
+                    [_cellView addSubview:passField];
+                }else if (indexPath.row == 4){
+                    cell.textLabel.text = @"秘钥";
+                    key = [[UITextField alloc]initWithFrame:_cellView.bounds];
+                    key.placeholder = @"连接共享秘钥(可选)";
+                    key.font = [UIFont systemFontOfSize:15];
+                    [_cellView addSubview:key];
+                }
+            }
+                break;
+            default:
+                break;
+        }
+
+    }
+        return cell;
+}
+
+/*IPSecConnect
+-(void)setIPSecConnect{
+    [_imageViewCourse removeFromSuperview];
+    [_mobTableVew removeFromSuperview];
+    [_getMobileconfigBtn removeFromSuperview];
+    
+    _mobTableVew = [[UITableView alloc]initWithFrame:CGRectMake(20, _segmentedControl.frame.origin.y +_segmentedControl.frame.size.height + 3, _segmentedControl.frame.size.width, self.view.frame.size.height- _segmentedControl.frame.origin.y - _segmentedControl.frame.size.height - 3) style:UITableViewStylePlain];
+    _mobTableVew.delegate = self;
+    _mobTableVew.dataSource = self;
+    _mobTableVew.scrollEnabled = NO;
+    _mobTableVew.tag = 1;
+    _mobTableVew.separatorColor = BACKGROUNDColor;
+    _mobTableVew.backgroundColor = [UIColor clearColor];
+    [_subView addSubview:_mobTableVew];
+    
+    _ipsecConnectBtn = [[UIButton alloc]init];
+    _ipsecConnectBtn.backgroundColor = BlueColor;
+    _ipsecConnectBtn.layer.cornerRadius = 5;
+    [_ipsecConnectBtn setTitle:@"连     接" forState:UIControlStateNormal];
+    [_ipsecConnectBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_ipsecConnectBtn addTarget:self action:@selector(connectIPSec:) forControlEvents:UIControlEventTouchUpInside];
+    [_subView addSubview:_ipsecConnectBtn];
+    _ipsecConnectBtn.translatesAutoresizingMaskIntoConstraints = NO;
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_ipsecConnectBtn attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeLeft multiplier:1 constant:40]];
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_ipsecConnectBtn attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeRight multiplier:1 constant:-40]];
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_ipsecConnectBtn attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1 constant:430]];
+    [_subView addConstraint:[NSLayoutConstraint constraintWithItem:_ipsecConnectBtn attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:45]];
+    
+}
+
+-(void)connectIPSec:(id)sender{
+    NSLog(@"conectIPSec");
+    NSArray *array = @[mobileconfigField.text,serField.text,userField.text,passField.text,key.text];
+    NSLog(@"*****%@",array);
+}
+*/
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

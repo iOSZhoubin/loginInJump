@@ -1,0 +1,20 @@
+PODS:
+  - MJExtension (3.0.15.1)
+  - SVProgressHUD (2.2.5)
+
+DEPENDENCIES:
+  - MJExtension
+  - SVProgressHUD
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - MJExtension
+    - SVProgressHUD
+
+SPEC CHECKSUMS:
+  MJExtension: 19bc33ce2eee2d319760f5622562cf581a6ff756
+  SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
+
+PODFILE CHECKSUM: d6ee8e535f8c704f2ec42a080e9fc2204f326ddb
+
+COCOAPODS: 1.5.3

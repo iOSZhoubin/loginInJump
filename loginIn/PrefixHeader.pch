@@ -1,0 +1,72 @@
+//
+//  PrefixHeader.pch
+//  loginIn
+//
+//  Created by jumpapp1 on 16/2/29.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#define MAS_SHORTHAND
+#define MAS_SHORTHAND_GLOBALS
+#import "Masonry.h"
+#import "AppDelegate.h"
+#import "MJExtension.h"
+#import "AFNetworking.h"
+#import "UIView+UIViewExtension.h"
+#import "SVPShow.h"
+#import "SecurityNSString.h"
+//#import "AFNHelper.h"
+//#import "AFNetworking.h"
+
+#define RGB(r,g,b) RGBA(r,g,b,1)
+
+#define RGBA(r,g,b,a) [UIColor \
+colorWithRed:r/255.0    \
+green:g/255.0           \
+blue:b/255.0 alpha:a]
+
+//屏幕宽高
+#define kWidth  [UIScreen mainScreen].bounds.size.width
+#define kHeight [UIScreen mainScreen].bounds.size.height
+//字符串的判断
+#define SafeString(string) [SecurityNSString safeStr:string]
+
+//适配iPhoneX
+#define  L2C_iPhoneX (kWidth == 375.f && kHeight == 812.f ? YES : NO)
+// 电池栏高度
+#define  L2C_StatusBarHeight      (L2C_iPhoneX ? 44.f : 20.f)
+// 导航栏高度.
+#define  L2C_NavigationBarHeight  44.f
+// tabBar高度
+#define  L2C_TabbarHeight         (L2C_iPhoneX ? (49.f+34.f) : 49.f)
+// 安全区域高度
+#define  L2C_TabbarSafeBottomMargin         (L2C_iPhoneX ? 34.f : 10.f)
+//toolbar高度
+#define L2C_ToolBarHeight (L2C_iPhoneX ? (44.f+L2C_TabbarSafeBottomMargin) : 44.f)
+// 导航栏+电池栏高度.
+#define  L2C_StatusBarAndNavigationBarHeight  (L2C_iPhoneX ? 88.f : 64.f)
+
+#define ScreenHeight ([UIScreen mainScreen].bounds.size.height)
+#define ScreenWidth ([UIScreen mainScreen].bounds.size.width)
+#define TITLEColor [UIColor colorWithRed:52/255.0 green:63/255.0 blue:83/255.0 alpha:1]
+#define TEXTColor [UIColor colorWithRed:111/255.0 green:117/255.0 blue:131/255.0 alpha:1]
+#define PLACEHOLDERColor [UIColor colorWithRed:199/255.0 green:199/255.0 blue:199/255.0 alpha:1]
+#define FOREGROUNDColor [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:1]
+#define BACKGROUNDColor [UIColor colorWithRed:238/255.0 green:239/255.0 blue:243/255.0 alpha:1]
+#define BlueColor [UIColor colorWithRed:44/255.0 green:159/255.0 blue:252/255.0 alpha:1]
+#define LineColor [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1]
+#define SupportColor [UIColor colorWithRed:109/255.0 green:109/255.0 blue:109/255.0 alpha:1]
+
+#define USER_USERNAME_PASS_SERVER @"user_username_pass_server"
+#define USER_USERMOBILECONFIGFILE @"user_userMmobileconfigFile"
+
+
+
+#endif /* PrefixHeader_pch */

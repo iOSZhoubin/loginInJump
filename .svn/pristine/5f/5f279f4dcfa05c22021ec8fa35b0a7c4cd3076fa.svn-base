@@ -1,0 +1,18 @@
+//
+//  VPNStatus.h
+//  loginIn
+//
+//  Created by jumpapp1 on 16/3/10.
+//  Copyright © 2016年 jumpapp1. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface VPNStatus : NSObject
+{
+    NSString *_contextStr;
+}
+@property(nonatomic,retain)NSString *contextStr;
++(VPNStatus *)shareInstance;
+
+@end
