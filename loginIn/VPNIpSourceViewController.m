@@ -19,11 +19,9 @@
 
 -(void)viewDidLoad{
     [super viewDidLoad];
-    self.navigationController.navigationBar.translucent = NO;
     self.dataArray = [NSMutableArray array];
     self.title =@"IP资源";
     self.view.backgroundColor = BACKGROUNDColor;
-    _dataDict = [[NSUserDefaults standardUserDefaults] objectForKey:USER_USERNAME_PASS_SERVER];
 
     [self.tableView registerNib:[UINib nibWithNibName:@"IPSourceTableViewCell" bundle:nil] forCellReuseIdentifier:@"IPSourceTableViewCell"];
 
@@ -38,7 +36,10 @@
     
     [SVPShow show];
     
-    NSString *url = [NSString stringWithFormat:@"https://%@/service/?service=loadIpSource",_dataDict[@"server"]];
+    _dataDict = [[NSUserDefaults standardUserDefaults] objectForKey:USER_USERNAME_PASS_SERVER];
+
+    
+    NSString *url = [NSString stringWithFormat:@"https://%@/service/?service=loadIpSource",SafeString(_dataDict[@"server"])];
 
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
     manager.responseSerializer = [AFHTTPResponseSerializer serializer];

@@ -28,108 +28,12 @@
     }
     return self;
 }
-//
-//-(void)viewDidLoad{
-//    [super viewDidLoad];
-//    self.tabBar.hidden = YES;
-//    [self initControllers];
-//    [self creatTabBar:self.viewControllers.count];
-//    [self initControllers];
-//    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(btnWithNotification:) name:@"mobileconfigFileSave" object:nil];
-//
-//}
-//
-//#pragma mark initControllers
-//-(void)initControllers{
-//    VPNConnectViewController *connectViewController = [[VPNConnectViewController alloc]init];
-//    [self addViewControllers:connectViewController title:@"网络连接"];
-//
-//    VPNResourcesViewController *resourcesViewController = [[VPNResourcesViewController alloc]init];
-//    [self addViewControllers:resourcesViewController title:@"资源列表"];
-//
-//    VPNMessageViewController *messageViewController = [[VPNMessageViewController alloc]init];
-//    [self addViewControllers:messageViewController title:@"消息中心"];
-//
-//    VPNMainMeViewController *mainMeViewController = [[VPNMainMeViewController alloc]init];
-//    [self addViewControllers:mainMeViewController title:@"个人中心"];
-//
-//}
-//
-//#pragma mark addViewControllers
-//-(void)addViewControllers:(UIViewController *)childController title:(NSString *)title{
-//    UINavigationController *navigation = [[UINavigationController alloc]initWithRootViewController:childController];
-//    childController.navigationItem.title = title;
-//
-//    childController.navigationItem.titleView.backgroundColor = [UIColor redColor];
-////    [navigation.navigationBar setBackgroundImage:[UIImage imageNamed:@"sy2@2x"] forBarMetrics:UIBarMetricsDefault];
-////    navigation.navigationBar.barTintColor = RGBA(198, 226, 225,1);
-//    navigation.navigationBar.barTintColor = [UIColor whiteColor];
-//
-//    [self addChildViewController:navigation];
-//}
-//
-//#pragma createTabBar
-//- (void)creatTabBar:(NSInteger)ControllersNum
-//{
-//    NSArray * normImage = @[@"home2@2x",@"sources2@2x",@"message2@2x",@"me2@2x"];
-//    NSArray * selectImage = @[@"home1@2x",@"sources1@2x",@"message1@2x",@"me1@2x"];
-//    NSArray * titleLabel = @[@"网络连接",@"资源列表",@"消息中心",@"个人中心"];
-////    UIImageView *tabbar = [[UIImageView alloc]initWithFrame:self.tabBar.frame];
-//    UIImageView *tabbar = [[UIImageView alloc]initWithFrame:CGRectMake(0, kHeight - L2C_TabbarHeight, kWidth, L2C_TabbarHeight)];
-//
-//    tabbar.backgroundColor =  [UIColor whiteColor];
-//    tabbar.userInteractionEnabled = YES;
-//    for(int i = 0;i<self.viewControllers.count;i++)
-//    {
-//        VPNTabBarBtn *btn = [VPNTabBarBtn buttonWithType:UIButtonTypeCustom];
-//        btn.frame = CGRectMake(EACH_W(self.viewControllers.count)*i, 0, EACH_W(self.viewControllers.count), EACH_H);
-//        btn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
-//        [btn setTitle:titleLabel[i] forState:UIControlStateNormal];
-//        [btn setTitleColor:TEXTColor forState:UIControlStateSelected];
-//        [btn setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
-//        btn.titleLabel.textAlignment = NSTextAlignmentCenter;
-//        btn.titleLabel.font = [UIFont systemFontOfSize:10];
-//        [btn setImage:[UIImage imageNamed:normImage[i]] forState:UIControlStateNormal];
-//        [btn setImage:[UIImage imageNamed:selectImage[i]] forState:UIControlStateSelected];
-//        btn.tag = BTNTAG+i;
-//        if (i == 1) {
-//            notificationBtn = btn;
-//        }
-//        [tabbar addSubview:btn];
-//        if(btn.tag==BTNTAG)
-//        {
-//            [self btnSelect:btn];
-//        }
-//        [btn addTarget:self action:@selector(btnSelect:) forControlEvents:UIControlEventTouchUpInside];
-//    }
-//    [self.view addSubview:tabbar];
-//}
-//
-//
-//- (void)btnSelect:(UIButton *)sender
-//{
-//    _button.selected =NO ;
-//    sender.selected = YES;
-//    _button = sender;
-//    self.selectedIndex = sender.tag-BTNTAG;
-//}
-//
-//-(void)btnWithNotification:(NSNotification *)notification{
-//    _button.selected = NO;
-//    notificationBtn.selected = YES;
-//    _button = notificationBtn;
-//    self.selectedIndex = notificationBtn.tag-BTNTAG;
-//}
-
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     [self setTabBar];
-    
-//    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(btnWithNotification:) name:@"mobileconfigFileSave" object:nil];
-
 }
 
 
