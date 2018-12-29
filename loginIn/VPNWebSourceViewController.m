@@ -35,7 +35,7 @@
     [AFNHelper get:server parameter:nil success:^(id responseObject) {
         
         NSData *data = responseObject;
-        NSString *str1 = [data mj_JSONString];
+//        NSString *str1 = [data mj_JSONString];
         NSString *str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
         _WebSource = str;
         [self createWebSourceView];

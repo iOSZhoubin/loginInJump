@@ -13,7 +13,7 @@
 #import "VPNCheckoutTextField.h"
 #import "VPNStatus.h"
 #import "AppDelegate.h"
-#import "AFHTTPSessionManager.h"
+//#import "AFHTTPSessionManager.h"
 
 #import "FileManager.h"
 #import "AFNetworkReachabilityManager.h"
@@ -238,8 +238,8 @@
 
     [AFNHelper post:_url parameters:_params success:^(id responseObject) {
         
-        NSData *data = responseObject;
-        NSString *str = [data mj_JSONString];
+//        NSData *data = responseObject;
+//        NSString *str = [data mj_JSONString];
         
         NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage]cookiesForURL:[NSURL URLWithString:_url]];
         NSDictionary *cookieDict = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];
@@ -305,8 +305,8 @@
 }
 
 -(void)timerStop{
-    [_connectTimer invalidate];
-    _connectTimer = nil;
+//    [_connectTimer invalidate];
+//    _connectTimer = nil;
 }
 
 -(void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error{

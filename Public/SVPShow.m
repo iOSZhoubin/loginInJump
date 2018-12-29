@@ -22,7 +22,7 @@ static UIView *gifView;
     [SVProgressHUD show];
 }
 
-
+//基本设置
 + (void)setStyle{
     [SVProgressHUD setDefaultStyle:SVProgressHUDStyleCustom];
     [SVProgressHUD setBackgroundColor:RGBA(0, 0, 0, 0.8 * 255)];
@@ -67,20 +67,6 @@ static UIView *gifView;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(svpTime * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [SVProgressHUD dismiss];
     });
-    
-}
-
-
-
-+ (void)dismissGIF{
-    UIView *view = gifView;
-    
-    [UIView animateWithDuration:0.2 animations:^{
-        view.alpha = 0;
-    } completion:^(BOOL finished) {
-        [view removeFromSuperview];
-        view.alpha = 0.95;
-    }];
     
 }
 

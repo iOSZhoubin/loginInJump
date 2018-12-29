@@ -7,7 +7,6 @@
 //
 
 #import "VPNResourcesViewController.h"
-#import "AgreementViewController.h"
 
 //资源展示页面
 @implementation VPNResourcesViewController

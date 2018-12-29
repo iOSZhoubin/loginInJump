@@ -25,8 +25,6 @@
 		3965996D1C814EDA00AB1DEE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3965996B1C814EDA00AB1DEE /* LaunchScreen.storyboard */; };
 		396599781C814EDA00AB1DEE /* loginInTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 396599771C814EDA00AB1DEE /* loginInTests.m */; };
 		396599831C814EDA00AB1DEE /* loginInUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 396599821C814EDA00AB1DEE /* loginInUITests.m */; };
-		396F650821CC815400CDAAF7 /* AgreementViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 396F650621CC815400CDAAF7 /* AgreementViewController.m */; };
-		396F650921CC815400CDAAF7 /* myWkWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 396F650721CC815400CDAAF7 /* myWkWebView.m */; };
 		396F650C21CC827400CDAAF7 /* UIView+UIViewExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 396F650B21CC827400CDAAF7 /* UIView+UIViewExtension.m */; };
 		396F651021CC925F00CDAAF7 /* IPSourceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 396F650E21CC925F00CDAAF7 /* IPSourceTableViewCell.m */; };
 		396F651121CC925F00CDAAF7 /* IPSourceTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 396F650F21CC925F00CDAAF7 /* IPSourceTableViewCell.xib */; };
@@ -138,10 +136,6 @@
 		3965997E1C814EDA00AB1DEE /* loginInUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = loginInUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		396599821C814EDA00AB1DEE /* loginInUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = loginInUITests.m; sourceTree = "<group>"; };
 		396599841C814EDA00AB1DEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		396F650421CC815400CDAAF7 /* myWkWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = myWkWebView.h; sourceTree = "<group>"; };
-		396F650521CC815400CDAAF7 /* AgreementViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AgreementViewController.h; sourceTree = "<group>"; };
-		396F650621CC815400CDAAF7 /* AgreementViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AgreementViewController.m; sourceTree = "<group>"; };
-		396F650721CC815400CDAAF7 /* myWkWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = myWkWebView.m; sourceTree = "<group>"; };
 		396F650A21CC827400CDAAF7 /* UIView+UIViewExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+UIViewExtension.h"; sourceTree = "<group>"; };
 		396F650B21CC827400CDAAF7 /* UIView+UIViewExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+UIViewExtension.m"; sourceTree = "<group>"; };
 		396F650D21CC925F00CDAAF7 /* IPSourceTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPSourceTableViewCell.h; sourceTree = "<group>"; };
@@ -419,10 +413,6 @@
 				396F651321CCB56500CDAAF7 /* SVPShow.m */,
 				396F650A21CC827400CDAAF7 /* UIView+UIViewExtension.h */,
 				396F650B21CC827400CDAAF7 /* UIView+UIViewExtension.m */,
-				396F650521CC815400CDAAF7 /* AgreementViewController.h */,
-				396F650621CC815400CDAAF7 /* AgreementViewController.m */,
-				396F650421CC815400CDAAF7 /* myWkWebView.h */,
-				396F650721CC815400CDAAF7 /* myWkWebView.m */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -816,7 +806,6 @@
 				5097C5F91C9B9EC6005796C1 /* ViewController+MASAdditions.m in Sources */,
 				501E612C1CC788990035DB4F /* MJRefreshBackFooter.m in Sources */,
 				501E613A1CC788990035DB4F /* MJRefreshConst.m in Sources */,
-				396F650921CC815400CDAAF7 /* myWkWebView.m in Sources */,
 				501E61321CC788990035DB4F /* MJRefreshAutoStateFooter.m in Sources */,
 				5097C5EB1C9B9EC6005796C1 /* MASCompositeConstraint.m in Sources */,
 				501E613D1CC788990035DB4F /* UIView+MJExtension.m in Sources */,
@@ -832,7 +821,6 @@
 				501E61371CC788990035DB4F /* MJRefreshNormalHeader.m in Sources */,
 				3941FA181C9FDEDE0010F60C /* VPNTabBarBtn.m in Sources */,
 				3907EF9F1CBC9C440062E288 /* FileManager.m in Sources */,
-				396F650821CC815400CDAAF7 /* AgreementViewController.m in Sources */,
 				501E61381CC788990035DB4F /* MJRefreshStateHeader.m in Sources */,
 				5097C5C71C9B9D3C005796C1 /* VPNFeatureViewController.m in Sources */,
 				3912FED21C91440400C9A708 /* VPNOtherSourceViewController.m in Sources */,
