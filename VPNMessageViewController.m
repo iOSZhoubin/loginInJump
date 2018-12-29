@@ -68,37 +68,33 @@
     
     NSString *url = [NSString stringWithFormat:@"https://%@/service/?service=getMeassages",dataDict[@"server"]];
     
-    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-    manager.requestSerializer = [AFHTTPRequestSerializer serializer];
-    [manager POST:url parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [AFNHelper post:url parameters:nil success:^(id responseObject) {
         
         NSData *data = responseObject;
         NSString *str = [data mj_JSONString];
         NSArray *array = [str mj_JSONObject];
         self.dataArray  = [MessageModel mj_objectArrayWithKeyValuesArray:array];
-
+        
         if(self.dataArray.count > 0){
             
             [SVPShow showSuccessWithMessage:@"加载数据成功"];
-
+            
         }else{
-           
+            
             [SVPShow showInfoWithMessage:@"暂未查询到数据"];
         }
         
         [self.tableView.mj_header endRefreshing];
-
+        
         [self.tableView reloadData];
         
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    } faliure:^(id error) {
         
         [self.tableView.mj_header endRefreshing];
-
+        
         [SVPShow showInfoWithMessage:@"请求服务器失败"];
-
     }];
-    
+
 }
 
 

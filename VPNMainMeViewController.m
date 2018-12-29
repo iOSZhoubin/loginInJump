@@ -176,30 +176,28 @@
     if (buttonIndex==0) {
         NSDictionary *dataDict = [[NSUserDefaults standardUserDefaults]objectForKey:USER_USERNAME_PASS_SERVER];
         NSString *serverStr = [dataDict objectForKey:@"server"];
-//        NSString *logOutUrl = [NSString stringWithFormat:@"https://%@/jumpvpn/logoff.php",serverStr];
-
- 
-        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-        manager.requestSerializer = [AFHTTPRequestSerializer serializer];
-        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
         NSString *logOutUrl = [NSString stringWithFormat:@"https://%@/jumpvpn/logoff.php",serverStr];
-        //向服务器端发送post请求，在注销登录成功后，跳转到登录页面
-        [manager POST:logOutUrl parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+
+        [SVPShow show];
+        
+        [AFNHelper post:logOutUrl parameters:nil success:^(id responseObject) {
             
             NSLog(@"注销登录成功");
+            
+            [SVPShow showSuccessWithMessage:@"注销成功"];
+            
             [[NSNotificationCenter defaultCenter]postNotificationName:@"loginOut" object:nil];
-          
+            
             ViewController *vc = [[ViewController alloc]init];
             
             AppDelegate *appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
             
             appdelegate.window.rootViewController = vc;
             
-
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-          }];
-       
-        
+        } faliure:^(id error) {
+            
+            [SVPShow showFailureWithMessage:@"注销失败"];
+        }];
     }
     [self.alertView dismissWithClickedButtonIndex:0 animated:YES];
 }

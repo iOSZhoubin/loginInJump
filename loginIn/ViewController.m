@@ -234,24 +234,13 @@
                 };
     
     [_loginBtn setEnabled:YES];
-
     
-    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-    manager.requestSerializer = [AFHTTPRequestSerializer serializer];
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-    manager.requestSerializer.timeoutInterval = 10.f;
-    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html", nil];
-    [manager.securityPolicy setAllowInvalidCertificates:YES];
-    manager.requestSerializer.HTTPShouldHandleCookies = YES;
-    _url = [NSString stringWithFormat:@"https://%@/mobile_login.php?login",_serverView.valueField.text];
-    //    NSLog(@"%@",_url);
 
-    //NSLog(@"+++++%@",_passView.valueField.text);
-    [manager POST:_url parameters:_params success:^(AFHTTPRequestOperation *operation, id responseObject) {
-
+    [AFNHelper post:_url parameters:_params success:^(id responseObject) {
+        
         NSData *data = responseObject;
         NSString *str = [data mj_JSONString];
-
+        
         NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage]cookiesForURL:[NSURL URLWithString:_url]];
         NSDictionary *cookieDict = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];
         
@@ -266,18 +255,19 @@
             if (!(_mobileconfigFileDict.count == 0)) {
                 [[NSNotificationCenter defaultCenter]postNotificationName:@"mobileconfigFileSave" object:nil userInfo:nil];
             }
-
+            
         }else{
             NSLog(@"登录失败");
             [_view1 removeFromSuperview];
             [_loginBtn setEnabled:YES];
             [self createAlertView:@"登录失败" :@"用户名或密码错误"];
         }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+    } faliure:^(id error) {
+        
         [_view1 removeFromSuperview];
         [self createAlertView:nil:@"连接超时"];
         [_loginBtn setEnabled:YES];
-
     }];
 }
 

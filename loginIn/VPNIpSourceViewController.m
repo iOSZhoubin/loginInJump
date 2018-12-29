@@ -37,31 +37,26 @@
     [SVPShow show];
     
     _dataDict = [[NSUserDefaults standardUserDefaults] objectForKey:USER_USERNAME_PASS_SERVER];
-
     
     NSString *url = [NSString stringWithFormat:@"https://%@/service/?service=loadIpSource",SafeString(_dataDict[@"server"])];
-
-    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-    manager.requestSerializer = [AFHTTPRequestSerializer serializer];
-    [manager POST:url parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-
+    
+    [AFNHelper post:url parameters:nil success:^(id responseObject) {
+        
         NSData *data = responseObject;
         NSString *str = [data mj_JSONString];
         NSArray *array = [str mj_JSONObject];
         [self.dataArray addObjectsFromArray:array];
         [self.tableView reloadData];
         [SVPShow showSuccessWithMessage:@"数据加载成功"];
-
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+    } faliure:^(id error) {
         
         UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"温馨提示" message:@"IP资源获取失败" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alertView show];
         
         [SVPShow disMiss];
 
-    }];
-    
+    }];    
 }
 
 

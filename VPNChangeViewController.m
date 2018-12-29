@@ -78,42 +78,41 @@
         NSDictionary *paramer = @{@"change_pass":@1,@"oldpass":self.formerTextField.text,@"newpass":self.nowTextField.text};
         NSString *sUrl = [NSString stringWithFormat:@"https://%@/jumpvpn/user_setting.php",_serverStr];
     
-        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-        manager.requestSerializer = [AFHTTPRequestSerializer serializer];
-        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-        [manager POST:sUrl parameters:paramer success:^(AFHTTPRequestOperation *operation, id   responseObject) {
-           
-            NSData *data = responseObject;
-            NSString *str = [data mj_JSONString];
-            
-            if([str isEqualToString:@"1"]){
-                
-                [SVPShow showSuccessWithMessage:@"密码修改成功"];
-                
-                NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:_nowTextField.text,@"passWord",_serverStr,@"server",_userStr,@"userName",nil];
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                
-                [defaults setObject:dict forKey:USER_USERNAME_PASS_SERVER];
-                
-                [defaults synchronize];
-                
-                ViewController *vc = [[ViewController alloc]init];
-                
-                AppDelegate *appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-                
-                appdelegate.window.rootViewController = vc;
-
-                
-            }else{
-                
-                [SVPShow showFailureWithMessage:@"密码修改失败"];
-            }
-            
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    [AFNHelper post:sUrl parameters:paramer success:^(id responseObject) {
         
+        NSData *data = responseObject;
+        NSString *str = [data mj_JSONString];
+        
+        if([str isEqualToString:@"1"]){
+            
+            [SVPShow showSuccessWithMessage:@"密码修改成功"];
+            
+            NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:_nowTextField.text,@"passWord",_serverStr,@"server",_userStr,@"userName",nil];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            
+            [defaults setObject:dict forKey:USER_USERNAME_PASS_SERVER];
+            
+            [defaults synchronize];
+            
+            ViewController *vc = [[ViewController alloc]init];
+            
+            AppDelegate *appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            
+            appdelegate.window.rootViewController = vc;
+            
+            
+        }else{
+            
             [SVPShow showFailureWithMessage:@"密码修改失败"];
+        }
 
-        }];
+        
+    } faliure:^(id error) {
+        
+        [SVPShow showFailureWithMessage:@"密码修改失败"];
+
+    }];
+
 
 }
 

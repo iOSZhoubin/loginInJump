@@ -32,10 +32,8 @@
     
     [SVPShow show];
     
-    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/html"];
-    [manager GET:server parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [AFNHelper get:server parameter:nil success:^(id responseObject) {
+        
         NSData *data = responseObject;
         NSString *str1 = [data mj_JSONString];
         NSString *str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
@@ -43,14 +41,14 @@
         [self createWebSourceView];
         
         
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-       
+    } faliure:^(id error) {
+        
         [SVPShow disMiss];
         
         UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"温馨提示" message:@"Web资源加载错误" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alertView show];
-        
     }];
+
 }
 
 //WebView

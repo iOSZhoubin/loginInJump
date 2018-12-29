@@ -4,4 +4,6 @@ pod 'MJExtension'
 
 pod 'SVProgressHUD'
 
+pod 'AFNetworking'
+
 end
