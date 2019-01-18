@@ -16,7 +16,7 @@
 //#import "AFHTTPSessionManager.h"
 
 #import "FileManager.h"
-#import "AFNetworkReachabilityManager.h"
+//#import "AFNetworkReachabilityManager.h"
 
 #import "Reachability.h"
 
@@ -224,7 +224,7 @@
 //    RootTabBarController *rootTabBarController = [[RootTabBarController alloc]init];
 //    self.view.window.rootViewController = rootTabBarController;
     
-    _url = [NSString stringWithFormat:@"https://%@/ios_login.php",_serverView.valueField.text];
+    _url = [NSString stringWithFormat:@"https://%@/mobile_login.php?login",_serverView.valueField.text];
 
     _params = @{
                 @"inputname":_nameView.valueField.text,
