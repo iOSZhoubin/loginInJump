@@ -27,6 +27,8 @@
 @property (nonatomic, strong) VPNLabelAndTextFieldView *nameView;
 @property (nonatomic, strong) VPNLabelAndTextFieldView *passView;
 @property (nonatomic, strong) VPNLabelAndTextFieldView *serverView;
+@property (nonatomic, strong) VPNLabelAndTextFieldView *portView;
+
 @property (nonatomic, strong) NSTimer *connectTimer;
 @property (nonatomic, strong) UIScrollView *scrollerView;
 @property (nonatomic, strong) NSDictionary *mobileconfigFileDict;
@@ -103,7 +105,7 @@
 
 //绘制登录界面
 -(void)setLoginView{
-    UIView *backView = [[UIView alloc] initWithFrame:CGRectMake((ScreenWidth - ScreenWidth/ 375 * 250)/2, ScreenHeight*0.3+20, ScreenWidth/ 375 * 250, 180)];
+    UIView *backView = [[UIView alloc] initWithFrame:CGRectMake((ScreenWidth - ScreenWidth/ 375 * 250)/2, ScreenHeight*0.3+20, ScreenWidth/ 375 * 250, 240)];
     backView.clipsToBounds = YES;
     [_scrollerView addSubview:backView];
     
@@ -148,6 +150,16 @@
     //    _serverView.valueField.textColor = TEXTColor;
     [backView addSubview:_serverView];
     
+    _portView = [[VPNLabelAndTextFieldView alloc]initWithFrame:CGRectMake(-1, 150, backView.frame.size.width+2, 40)];
+    _portView.nameLabel.text = @"端口";
+    _portView.nameLabel.textColor = [UIColor whiteColor];
+    _portView.valueField.placeholder = @"请输入端口号";
+    _portView.valueField.delegate = self;
+    [_portView.valueField setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    _portView.valueField.text = _dataDict[@"port"];
+    _portView.valueField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    [backView addSubview:_portView];
+    
     _loginBtn = [[UIButton alloc] initWithFrame:CGRectMake((ScreenWidth - 200)/2, backView.frame.origin.y+backView.frame.size.height - 20, 200, 50)];
     //    loginBtn.centerX = self.view.centerX;
     //    loginBtn.top = backView.bottom + 43.5;
@@ -186,6 +198,15 @@
     });
     //    [self removeCookies];
     [_loginBtn setEnabled:NO];
+    
+    if(_portView.valueField.text.length < 1){
+        
+        [self createAlertView:nil:@"请填写端口号"];
+
+        return;
+    }
+    
+    
     if ([VPNCheckoutTextField checkTextFieldWithNumberOrGrapheme:_nameView.valueField.text]) {
         if ([VPNCheckoutTextField checkServerWithRule:_serverView.valueField.text] || [VPNCheckoutTextField checkTextFieldWithRealmName:_serverView.valueField.text]) {
             [self loginConnect];
@@ -224,7 +245,7 @@
 //    RootTabBarController *rootTabBarController = [[RootTabBarController alloc]init];
 //    self.view.window.rootViewController = rootTabBarController;
     
-    _url = [NSString stringWithFormat:@"https://%@/mobile_login.php?login",_serverView.valueField.text];
+    _url = [NSString stringWithFormat:@"https://%@:%@/mobile_login.php?login",_serverView.valueField.text,_portView.valueField.text];
 
     _params = @{
                 @"inputname":_nameView.valueField.text,
@@ -389,7 +410,7 @@
 
 //记住账号密码
 -(void)saveUserinformation{
-    NSDictionary *dict = [[NSDictionary alloc]initWithObjectsAndKeys:_nameView.valueField.text,@"userName",_passView.valueField.text,@"passWord",_serverView.valueField.text,@"server", nil];
+    NSDictionary *dict = [[NSDictionary alloc]initWithObjectsAndKeys:_nameView.valueField.text,@"userName",_passView.valueField.text,@"port",_portView.valueField.text,@"passWord",_serverView.valueField.text,@"server", nil];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:dict forKey:USER_USERNAME_PASS_SERVER];
     [defaults synchronize];
