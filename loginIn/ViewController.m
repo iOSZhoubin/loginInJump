@@ -199,14 +199,6 @@
     //    [self removeCookies];
     [_loginBtn setEnabled:NO];
     
-    if(_portView.valueField.text.length < 1){
-        
-        [self createAlertView:nil:@"请填写端口号"];
-
-        return;
-    }
-    
-    
     if ([VPNCheckoutTextField checkTextFieldWithNumberOrGrapheme:_nameView.valueField.text]) {
         if ([VPNCheckoutTextField checkServerWithRule:_serverView.valueField.text] || [VPNCheckoutTextField checkTextFieldWithRealmName:_serverView.valueField.text]) {
             [self loginConnect];
@@ -245,7 +237,15 @@
 //    RootTabBarController *rootTabBarController = [[RootTabBarController alloc]init];
 //    self.view.window.rootViewController = rootTabBarController;
     
-    _url = [NSString stringWithFormat:@"https://%@:%@/mobile_login.php?login",_serverView.valueField.text,_portView.valueField.text];
+    if(_portView.valueField.text.length > 0){
+    
+        _url = [NSString stringWithFormat:@"https://%@:%@/mobile_login.php?login",_serverView.valueField.text,_portView.valueField.text];
+
+    }else{
+
+        _url = [NSString stringWithFormat:@"https://%@/mobile_login.php?login",_serverView.valueField.text];
+
+    }
 
     _params = @{
                 @"inputname":_nameView.valueField.text,
@@ -410,6 +410,12 @@
 
 //记住账号密码
 -(void)saveUserinformation{
+    
+    if(_portView.valueField.text.length < 1){
+        
+        _portView.valueField.text = @"";
+    }
+    
     NSDictionary *dict = [[NSDictionary alloc]initWithObjectsAndKeys:_nameView.valueField.text,@"userName",_passView.valueField.text,@"port",_portView.valueField.text,@"passWord",_serverView.valueField.text,@"server", nil];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:dict forKey:USER_USERNAME_PASS_SERVER];
